@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local Claude Gateway · Control center</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1118;--panel:#171c26;--surface:#1c2330;--line:#303948;--ink:#edf1f7;--sub:#97a4b5;--accent:#e9a65d;--good:#7acaac;--bad:#fa8c8b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,Arial,sans-serif}button,input{font:inherit}button{cursor:pointer}a{color:var(--accent)}.shell{max-width:1160px;margin:auto;padding:34px 24px 70px}header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding-bottom:28px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:14px}.logo{border:1px solid #b78350;background:#33271b;border-radius:15px;padding:12px;font-size:27px}.eyebrow{letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-size:11px;font-weight:800}h1{font-size:27px;line-height:1.25;margin:3px 0 0}h2{font-size:17px;margin:0 0 15px}p{color:var(--sub)}.top{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:9px}.dot{width:8px;height:8px;background:var(--good);border-radius:100%;display:inline-block}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:26px 0}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px}.stat{padding:20px}.stat-label{color:var(--sub);font-size:13px}.stat-value{font-size:29px;font-weight:750;margin-top:8px}.stat-note{font-size:11px;color:var(--sub)}.panel{padding:22px;margin:18px 0}.flex{display:flex;align-items:center;justify-content:space-between;gap:20px}.muted{color:var(--sub)}.section-desc{margin:0 0 20px}.fields{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}.field{display:flex;flex-direction:column;gap:6px;min-width:0}label{font-size:12px;color:var(--sub)}input{border-radius:9px;padding:11px 12px;background:#0e141e;color:var(--ink);border:1px solid #3a4354;outline:none;min-width:0;width:100%}input:focus{border-color:var(--accent)}button{background:var(--accent);color:#20150a;font-weight:750;border:0;border-radius:9px;padding:11px 17px;white-space:nowrap}button:hover{filter:brightness(1.07)}button:disabled{opacity:.5;cursor:default}.secondary{background:#2b3443;color:var(--ink);border:1px solid #414d60}.danger{background:#40272b;color:#ffaba8;border:1px solid #68434a}.tiny{font-size:12px;padding:6px 10px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--sub);font-weight:600;padding:11px 9px;border-bottom:1px solid var(--line)}td{padding:12px 9px;border-bottom:1px solid #27303c}tr:last-child td{border-bottom:0}.pill{font-size:11px;background:#204037;color:#b1edcf;padding:4px 9px;border-radius:99px;font-weight:700}.pill.revoked{background:#3e2d31;color:#efa9ab}.notice{border:1px solid #6a4a2b;background:#30251c;padding:14px 16px;border-radius:11px;margin:16px 0;color:#f4d5b6}.secret{display:flex;align-items:center;gap:10px;padding:12px;margin-top:14px;background:#0e141e;border:1px solid #384356;border-radius:11px}.secret code{overflow-wrap:anywhere;flex:1;color:#fff}.hidden{display:none!important}#login{max-width:510px;margin:50px auto}.footer{text-align:center;margin-top:35px;font-size:12px;color:var(--sub)}code{font-size:12px;color:#e9b582}#alert{margin-top:16px;color:var(--bad);white-space:pre-wrap}.mono{font-family:ui-monospace,monospace}#new-key-zone{margin-top:14px}.copy-row{display:flex;gap:6px}.config-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px}.config{background:#121824;padding:15px;border-radius:10px}.config .lbl{color:var(--sub);font-size:12px}.config code{display:block;word-break:break-all;margin-top:6px}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr 1fr}.fields>.field:first-child{grid-column:span 2}.fields>button{grid-column:span 2}.config-panel{grid-template-columns:1fr}}@media(max-width:480px){.shell{padding:18px 12px}.grid{grid-template-columns:1fr 1fr;gap:8px}.stat{padding:14px}.stat-value{font-size:25px}h1{font-size:23px}.panel{padding:14px}.flex{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><div class="logo">⌘</div><div><div class="eyebrow">Private infrastructure</div><h1>Claude Gateway</h1></div></div><div class="top"><span class="dot"></span> Loopback only <button class="secondary tiny hidden" id="logout">Lock</button></div></header>
+<section class="panel" id="login"><div class="eyebrow">Authentication</div><h2 style="margin-top:8px">Unlock control center</h2><p>Enter your admin token from <code>python app.py setup</code>. It is kept in this browser tab's memory and is never stored in localStorage.</p><div class="field"><label for="admin-token">Admin token</label><input id="admin-token" type="password" placeholder="lcga_..." autocomplete="off"></div><button style="margin-top:14px;width:100%" id="unlock">Unlock dashboard</button><div id="login-error"></div></section>
+<main id="app" class="hidden">
+<div class="grid"><div class="stat"><div class="stat-label">Active API keys</div><div class="stat-value" id="stat-keys">—</div><div class="stat-note">Locally generated credentials</div></div><div class="stat"><div class="stat-label">Requests · 24 hours</div><div class="stat-value" id="stat-day">—</div><div class="stat-note">All routes combined</div></div><div class="stat"><div class="stat-label">Lifetime requests</div><div class="stat-value" id="stat-all">—</div><div class="stat-note">Completed and rejected upstream attempts</div></div><div class="stat"><div class="stat-label">Saved sessions</div><div class="stat-value" id="stat-sessions">—</div><div class="stat-note">Expire after seven days</div></div></div>
+<div class="panel"><div class="flex"><div><h2>Gateway connection</h2><p class="section-desc">Use these values in the backend of your application, not in public frontend JavaScript.</p></div><span class="pill" id="backend-status">Checking</span></div><div class="config-panel"><div class="config"><div class="lbl">Base URL</div><code id="baseurl">http://127.0.0.1:8765/v1</code></div><div class="config"><div class="lbl">Models</div><code>sonnet · opus · haiku</code></div></div><p style="margin-bottom:0">Provider: <strong id="backend-label">Claude Code subscription</strong> · <span id="token-totals">0 input / 0 output tokens logged</span></p></div>
+<div class="panel"><h2>Create API key</h2><p class="section-desc">Create separate keys for different apps or agents. You can revoke each key independently.</p><form id="key-form" class="fields"><div class="field"><label for="label">Name</label><input id="label" name="label" value="My Claude App" maxlength="70" required></div><div class="field"><label for="rpm">Requests / minute</label><input id="rpm" name="rpm" type="number" min="1" max="120" value="12" required></div><div class="field"><label for="monthly">Requests / 30 days</label><input id="monthly" name="monthly" type="number" min="1" max="1000000" value="3000" required></div><button type="submit">+ Create key</button></form><div id="new-key-zone" class="hidden"><div class="notice">Copy this key now. Its full value cannot be recovered later. Never commit it to Git or bundle it into a frontend app.</div><div class="secret"><code id="generated-key"></code><button class="secondary tiny" id="copy-key">Copy</button></div></div></div>
+<div class="panel"><div class="flex"><h2>API keys</h2><button id="refresh" class="secondary tiny">↻ Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Key prefix</th><th>Limit/min</th><th>Used/30d</th><th>Status</th><th></th></tr></thead><tbody id="keys-body"></tbody></table></div></div>
+<div class="panel"><h2>Recent requests</h2><p class="section-desc">Metadata only. No prompts, responses or API secrets are stored in request logs.</p><div class="table-wrap"><table><thead><tr><th>When</th><th>App</th><th>Endpoint</th><th>Model</th><th>Status</th><th>Duration</th><th>Tokens in/out</th></tr></thead><tbody id="logs-body"></tbody></table></div></div>
+<div class="panel"><h2>Saved conversations</h2><p class="section-desc">Only requests made through the dedicated sessions endpoint are stored. Session messages are kept locally until deleted or expired.</p><div class="table-wrap"><table><thead><tr><th>Name</th><th>Owner</th><th>Model</th><th>Last activity</th><th></th></tr></thead><tbody id="sessions-body"></tbody></table></div></div>
+<div id="alert"></div>
+</main><div class="footer">Local-only API gateway · Claude Code subscription login · Subject to plan usage limits</div>
+</div>
+<script>
+(()=>{
+let adminToken='';
+const $=(id)=>document.getElementById(id);
+const dt=(x)=>new Date(x*1000).toLocaleString();
+const number=(x)=>Number(x||0).toLocaleString();
+function showErr(message){$('alert').textContent=String(message)}
+async function api(path,opts={}){
+ const response=await fetch(path,{...opts,headers:{'X-Admin-Token':adminToken,'Content-Type':'application/json',...(opts.headers||{})}});
+ let data={};try{data=await response.json()}catch{}
+ if(!response.ok)throw Error(data.detail||`HTTP ${response.status}`);
+ return data;
+}
+function cell(tr,text,cls){const td=document.createElement('td');td.textContent=String(text);if(cls)td.className=cls;tr.appendChild(td);return td}
+function action(tr,label,css,fn){const td=document.createElement('td');const b=document.createElement('button');b.textContent=label;b.className=css;b.onclick=fn;td.appendChild(b);tr.appendChild(td)}
+function empty(tbody,text,colspan){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=colspan;td.textContent=text;td.className='muted';tr.appendChild(td);tbody.appendChild(tr)}
+async function load(){
+ showErr('');const [overview,keys,logs,sessions]=await Promise.all([
+ api('/admin/overview'),api('/admin/keys'),api('/admin/logs'),api('/admin/sessions')]);
+ $('stat-keys').textContent=number(overview.keys);$('stat-day').textContent=number(overview.requests_24h);
+ $('stat-all').textContent=number(overview.requests);$('stat-sessions').textContent=number(overview.sessions);
+ $('backend-label').textContent=overview.backend==='cli'?'Claude Code CLI (subscription)':'Official Anthropic API (opt-in, billed)';
+ $('backend-status').textContent=overview.configured?'Connected':(overview.backend==='cli'?'Claude login missing':'API key missing');
+ $('backend-status').className='pill'+(overview.configured?'':' revoked');
+ $('token-totals').textContent=`${number(overview.input_tokens)} input / ${number(overview.output_tokens)} output tokens logged`;
+ const kb=$('keys-body');kb.replaceChildren();if(!keys.data.length)empty(kb,'No keys yet',6);
+ for(const k of keys.data){const tr=document.createElement('tr');cell(tr,k.label);cell(tr,k.hint,'mono');cell(tr,k.rpm);
+ cell(tr,`${number(k.last_30d)} / ${number(k.monthly_limit)}`);cell(tr,k.revoked_at?'Revoked':'Active',k.revoked_at?'pill revoked':'pill');
+ if(k.revoked_at){cell(tr,'—')}else{action(tr,'Revoke','danger tiny',async()=>{if(!confirm('Revoke this API key permanently?'))return;
+ try{await api('/admin/keys/'+encodeURIComponent(k.id)+'/revoke',{method:'POST'});await load()}catch(e){showErr(e.message)}})}kb.appendChild(tr)}
+ const lb=$('logs-body');lb.replaceChildren();if(!logs.data.length)empty(lb,'No requests yet',7);
+ for(const l of logs.data){const tr=document.createElement('tr');cell(tr,dt(l.created_at));cell(tr,l.label);cell(tr,l.endpoint);cell(tr,l.model);
+ cell(tr,l.status||'Pending');cell(tr,l.duration_ms+' ms');cell(tr,`${l.input_tokens}/${l.output_tokens}`);lb.appendChild(tr)}
+ const sb=$('sessions-body');sb.replaceChildren();if(!sessions.data.length)empty(sb,'No saved sessions',5);
+ for(const s of sessions.data){const tr=document.createElement('tr');cell(tr,s.name);cell(tr,s.owner);cell(tr,s.model);cell(tr,dt(s.updated_at));
+ action(tr,'Delete','danger tiny',async()=>{if(!confirm('Delete this session and all messages?'))return;
+ try{await api('/admin/sessions/'+encodeURIComponent(s.id),{method:'DELETE'});await load()}catch(e){showErr(e.message)}});sb.appendChild(tr)}
+}
+$('unlock').onclick=async()=>{
+ adminToken=$('admin-token').value.trim();if(!adminToken)return;
+ try{await api('/admin/overview');$('login').classList.add('hidden');$('app').classList.remove('hidden');$('logout').classList.remove('hidden');$('admin-token').value='';await load()}
+ catch(e){$('login-error').textContent=e.message;adminToken=''};
+};
+$('admin-token').addEventListener('keydown',e=>{if(e.key==='Enter')$('unlock').click()});
+$('logout').onclick=()=>{adminToken='';$('app').classList.add('hidden');$('logout').classList.add('hidden');$('login').classList.remove('hidden');$('new-key-zone').classList.add('hidden');$('generated-key').textContent=''};
+$('refresh').onclick=async()=>{try{await load()}catch(e){showErr(e.message)}};
+$('key-form').onsubmit=async(e)=>{e.preventDefault();$('new-key-zone').classList.add('hidden');$('generated-key').textContent='';
+ try{const created=await api('/admin/keys',{method:'POST',body:JSON.stringify({label:$('label').value,rpm:Number($('rpm').value),monthly_limit:Number($('monthly').value)})});
+ $('generated-key').textContent=created.key;$('new-key-zone').classList.remove('hidden');await load()}
+ catch(err){showErr(err.message)}};
+$('copy-key').onclick=async()=>{const key=$('generated-key').textContent;try{await navigator.clipboard.writeText(key);$('copy-key').textContent='Copied!'}catch{showErr('Clipboard unavailable: select and manually copy the displayed key.')}};
+$('baseurl').textContent=window.location.origin+'/v1';
+})();
+</script>
+</body>
+</html>
